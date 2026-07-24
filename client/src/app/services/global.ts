@@ -1,4 +1,4 @@
-export var GLOBAL = {
-    url: '/api/'
-}
+export const GLOBAL = {
+  url: '/api/'
+};
 

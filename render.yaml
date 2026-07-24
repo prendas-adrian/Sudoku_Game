@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: sudoku-backend
+    env: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 8080
+      - key: MONGODB_URI
+        value: mongodb+srv://a6r2an_db_user:l9dbn9bwbvItPAJB@cluster0.p6ysfbz.mongodb.net
+    region: "oregon"

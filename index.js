@@ -5,12 +5,11 @@ var app = require('./app');
 var port = process.env.PORT || 8080;
 
 mongoose.Promise = global.Promise;
-//mongoose.connect('mongodb://jose:macros98@ds159344.mlab.com:59344/sudoku', { useMongoClient: true})
-mongoose.connect('mongodb://root:example@localhost:27017/sudoku', { 
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-    authSource: 'admin'
-})  
+
+// Use environment variable for MongoDB URI, fallback to local connection
+const mongoUri = process.env.MONGODB_URI || 'mongodb://root:example@localhost:27017/sudoku?authSource=admin';
+
+mongoose.connect(mongoUri)  
     .then(() => {
         console.log('La conexion a la base de datos se realizo correctamente...');
         app.listen(port, () => {

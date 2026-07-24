@@ -7,12 +7,18 @@ export class Game {
     selectedCell: any;
     range: Array<any>;
     error;
+    cellSize: number;
     
     constructor(user: User, grid: Grid) {
         this.user = user;
         this.grid = grid;
         this.range = Array.from({length : 9}, (_, i) => i);
         this.error;
+        this.cellSize = 50;
+    }
+
+    setCellSize(size: number) {
+        this.cellSize = size;
     }
     checkGrid() {
         return this.grid.check();
@@ -41,8 +47,8 @@ export class Game {
         });
       }
       getCellAt(x, y) {
-        var row = Math.floor(y / 50);
-        var col = Math.floor(x / 50);
+        var row = Math.floor(y / this.cellSize);
+        var col = Math.floor(x / this.cellSize);
         if (row < 0 || row > 8 || col < 0 || col > 8) {
           return undefined;
         } else {
