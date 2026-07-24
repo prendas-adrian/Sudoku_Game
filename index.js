@@ -9,10 +9,7 @@ mongoose.Promise = global.Promise;
 // Use environment variable for MongoDB URI, fallback to local connection
 const mongoUri = process.env.MONGODB_URI || 'mongodb://root:example@localhost:27017/sudoku?authSource=admin';
 
-mongoose.connect(mongoUri, { 
-    useNewUrlParser: true,
-    useUnifiedTopology: true
-})  
+mongoose.connect(mongoUri)  
     .then(() => {
         console.log('La conexion a la base de datos se realizo correctamente...');
         app.listen(port, () => {
