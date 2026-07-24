@@ -1581,7 +1581,7 @@ var User = (function () {
 "use strict";
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return GLOBAL; });
 var GLOBAL = {
-    url: '/api/'
+    url: 'https://sudoku-backend.onrender.com/api/'
 };
 //# sourceMappingURL=global.js.map
 
