@@ -12,5 +12,4 @@ services:
         value: 8080
       - key: MONGODB_URI
         value: mongodb+srv://root:example@cluster0.mongodb.net/sudoku?retryWrites=true&w=majority
-    regions:
-      - oregon
+
