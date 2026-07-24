@@ -1,53 +1,100 @@
 # Sudoku
-Este proyecto se realizo con el objetivo de aprender la arquitectura MEAN
-en la cual se utilizo en este caso [MongoDB](http://www.mongodb.org/) como base de datos,
-ademas [Node.js](http://www.nodejs.org/) con su complemento y framework mas usado para 
-servidores [Express](http://expressjs.com/), estas fueron utilizadas para el desarrollo del
-API Rest y como framework de desarrollo para el cliente se utilizo [AngularJS](http://angularjs.org/)
-esto para realizar una SPA (Single Page Application) que permitira el manejo del juego Sudoku
 
-## Herramientas
-Las herramientas que se utilizaron para el desarrollo de esta aplicacion son:
-* MongoDB - [MongoDB Base de Datos](http://mongodb.org/) 
-* Express - [Express Framework Node](http://expressjs.com/)
-* AngularJS - [AngularJS Cliente](http://angularjs.org/)
-* Node.js - [Node.js Servidor](http://nodejs.org/)
-* Mongoose.js - [Mongoose.js ORM para MongoDB](http://mongoosejs.com/)
-* P5.js - [P5.js Diseño del Tablero](https://p5js.org/)
+Juego de Sudoku construido con la arquitectura MEAN (MongoDB, Express, Angular 4, Node.js). Incluye generador/resolvedor de sudokus, autenticacion con JWT y un tablero interactivo dibujado con p5.js.
 
 ## Requisitos
-Asegurarse de instalar las siguientes herramientas:
-* Git - [Descarga e Instala Git](https://git-scm.com/downloads) Se utiliza para la gestion del repositorio
-* Node.js - [Descarga e Instala Node.js](https://nodejs.org/en/download/) Instalar el paquete de npm
-* MongoDB - [Descarga e Instala MongoDB](http://www.mongodb.org/downloads) Mantener en el puerto (27017)
 
-### Clonar el repositorio de Github
-La forma recomendada es con la directiva clonar de git:
+- [Docker](https://docs.docker.com/get-docker/) y Docker Compose
 
-```bash
-$ git clone https://github.com/alonsocoding/Sudoku_Game
-```
+## Ejecutar en entorno local
 
-### Compilando el proyecto
-
-0) levantar la base de datos 
+1. Clonar el repositorio:
 
 ```bash
-$ mongod -dbpath "PATH"
+git clone https://github.com/alonsocoding/Sudoku_Game
+cd Sudoku_Game
 ```
 
-1) Ejecutar el siguiente comando dentro de la carpeta api para correr el API Rest:
+2. Levantar los servicios:
 
 ```bash
-$ npm start
+docker-compose up
 ```
 
-2) Ejecutar el siguiente comando dentro de la carpeta cliente:
+Esto levanta:
+- **MongoDB** en el puerto `27017`
+- **Backend (API)** en el puerto `8080` con la app Angular servida en `http://localhost:8080`
 
-```bash
-$ ng serve
+3. Abrir en el navegador:
+
+```
+http://localhost:8080
 ```
 
-3) Ingresar a http://localhost:4200/ 
+### Comandos utiles
 
+| Accion | Comando |
+|---|---|
+| Levantar en background | `docker-compose up -d` |
+| Ver logs | `docker-compose logs -f backend` |
+| Detener servicios | `docker-compose down` |
+| Reconstruir imagen | `docker-compose up --build` |
+| Eliminar datos de MongoDB | `docker-compose down -v` |
 
+## Estructura del proyecto
+
+```
+.
+├── index.js                  # Entry point del servidor
+├── app.js                    # Configuracion de Express y rutas
+├── Dockerfile                # Imagen del backend (Node 20)
+├── docker-compose.yml        # Servicios: MongoDB + Backend
+├── .env                      # Variables de entorno (credenciales, puertos)
+├── middlewares/
+│   └── authenticated.js      # Middleware de autenticacion JWT
+├── services/
+│   └── jwt.js                # Creacion de tokens JWT
+├── controllers/
+│   ├── user.js               # Registro, login, actualizacion de usuarios
+│   └── sudoku.js             # CRUD de grids y juegos, resolvedor
+├── routes/
+│   ├── user.js               # Rutas de usuario (/api/register, /api/login, ...)
+│   └── sudoku.js             # Rutas de sudoku (/api/sudoku/...)
+├── models/
+│   ├── user.js               # Schema de usuario
+│   ├── game.js               # Schema de juego
+│   ├── grid.js               # Schema de tablero
+│   ├── cell.js               # Schema de celda
+│   └── solver/               # Logica de resolvedor y generador de sudokus
+├── client/                   # Frontend Angular 4
+│   ├── src/
+│   │   ├── app/              # Componentes, servicios y modelos Angular
+│   │   ├── styles.css        # Estilos globales
+│   │   └── index.html        # HTML principal
+│   └── package.json
+└── public/                   # Build de Angular (generado por ng build)
+```
+
+## API
+
+Todas las rutas estan bajo `/api`:
+
+| Metodo | Ruta | Descripcion |
+|---|---|---|
+| POST | `/register` | Registrar usuario |
+| POST | `/login` | Iniciar sesion |
+| PUT | `/update-user/:id` | Actualizar usuario (requiere JWT) |
+| GET | `/find-user/:id` | Buscar usuario (requiere JWT) |
+| POST | `/sudoku/insert-grid` | Insertar grids |
+| GET | `/sudoku/get-grid/:id` | Obtener grid |
+| GET | `/sudoku/get-grid-diff/:difficulty` | Obtener grid por dificultad |
+| POST | `/sudoku/insert-game` | Guardar juego |
+| GET | `/sudoku/get-game/:id` | Cargar juego |
+| POST | `/sudoku/rsolve` | Resolver sudoku |
+
+## Stack
+
+- **Backend:** Node.js + Express + Mongoose + JWT
+- **Frontend:** Angular 4 + Bootstrap 4 + p5.js
+- **Base de datos:** MongoDB 8
+- **Infraestructura:** Docker + Docker Compose
