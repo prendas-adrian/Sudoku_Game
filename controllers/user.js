@@ -52,7 +52,7 @@ async function login_user(req, res) {
     var password = params.password;
 
     try {
-        var user = await User.findOne({username: username.toLowerCase()});
+        var user = await User.findOne({username: username});
         if(!user) return res.status(404).send({message: 'El usuario no existe'});
 
         bcrypt.compare(password, user.password, (err, check) => {

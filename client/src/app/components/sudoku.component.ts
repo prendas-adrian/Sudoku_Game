@@ -71,10 +71,27 @@ export class SudokuComponent implements OnInit{
         console.log('sudoku.compose.ts cargando...');
         const s = (p) => {
                   let canvas;
+                  let cellSize;
+                  let canvasSize;
+
+                  const calculateSize = () => {
+                    const maxWidth = Math.min(window.innerWidth - 40, 451);
+                    canvasSize = Math.max(280, maxWidth);
+                    cellSize = Math.floor(canvasSize / 9);
+                    canvasSize = cellSize * 9;
+                    this.game.setCellSize(cellSize);
+                  };
+
                   p.setup = () => {
-                    canvas = p.createCanvas(451, 451);
+                    calculateSize();
+                    canvas = p.createCanvas(canvasSize, canvasSize);
                     canvas.parent('sudokuGrid');
                     p.background(240);
+                  }
+
+                  p.windowResized = () => {
+                    calculateSize();
+                    p.resizeCanvas(canvasSize, canvasSize);
                   }
 
                   p.draw = () => {
@@ -82,21 +99,21 @@ export class SudokuComponent implements OnInit{
                     p.drawCells();
                     if(this.game.checkGrid()) {
                         p.fill(50, 255, 50, 128);
-                        p.rect(0, 0, 9 * 50, 9 * 50);
+                        p.rect(0, 0, cellSize * 9, cellSize * 9);
                     }
                   }
 
                   p.drawCells = () => {
                     // Dibuja el borde del rectangulo
                     p.fill(255, 255, 255, 255);
-                    p.rect(0, 0, 450, 450);
+                    p.rect(0, 0, canvasSize, canvasSize);
                     // Dibuja las celdas
                     this.range.forEach((row)=> {
                       this.range.forEach((col)=> {
                             p.fill(255, 255, 255, 128);
                           if (row % 3 === 0 && col % 3 === 0) {
                             p.strokeWeight(3);
-                            p.rect(col * 50, row * 50, 150, 150);
+                            p.rect(col * cellSize, row * cellSize, cellSize * 3, cellSize * 3);
                             p.strokeWeight(1);
                           } 
                           // Escoje el color de cada celda
@@ -111,15 +128,15 @@ export class SudokuComponent implements OnInit{
                           } 
                           
                           // El texto y estilo de cada celda
-                          p.rect(col * 50, row * 50, 50, 50);
+                          p.rect(col * cellSize, row * cellSize, cellSize, cellSize);
                           p.fill(0, 0, 0, 255);
                           if (this.grid.getCell(row, col).visible) {
-                            p.textSize(20);
+                            p.textSize(Math.floor(cellSize * 0.4));
                             if(this.grid.getCell(row, col).fixed)
                             p.textStyle(p.BOLD);
                             else 
                                 p.textStyle(p.NORMAL);
-                            p.text(this.grid.getCell(row, col).value, col * 50 + 50 / 4, row * 50 + 50 / 1.5);
+                            p.text(this.grid.getCell(row, col).value, col * cellSize + cellSize / 4, row * cellSize + cellSize / 1.5);
                           }
                           // Errores deshabilitados
                           this.grid.getCell(row, col).error = false;
