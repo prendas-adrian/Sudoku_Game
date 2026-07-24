@@ -3,7 +3,6 @@
 var fs = require('fs');
 var path = require('path');
 var bcrypt = require('bcrypt-nodejs'); // Encriptar nuestra contraseña
-var mongoosePaginate = require('mongoose-pagination');
 var Cell = require('../models/cell');
 var Grid = require('../models/grid');
 var Game = require('../models/game');
@@ -81,71 +80,59 @@ function insertGrid(req, res) {
     }
 
         // Borrar todos los grids
-        Grid.find().remove( function (err){
-            if(err)
+        Grid.deleteMany( {}).then(() => {
             console.log("Se eliminan");
-        });
+        }).catch(() => {});
 
         // Guarda grid facil
-        grid_easy.save((err, gridStored) => {
-            if(err)
-                console.log("No se guardo easy");
-        });
+        grid_easy.save().then(() => {
+        }).catch(() => { console.log("No se guardo easy"); });
 
         // Guarda grid medio
-        grid_medium.save((err, gridStored) => {
-            if(err)
-                console.log("No se guardo easy");
-        });
+        grid_medium.save().then(() => {
+        }).catch(() => { console.log("No se guardo medium"); });
 
         // Guarda grid dificil
-        grid_hard.save((err, gridStored) => {
-            if(err)
-                console.log("No se guardo easy");
-        });
+        grid_hard.save().then(() => {
+        }).catch(() => { console.log("No se guardo hard"); });
 }
 
-function getGrid(req, res) {
+async function getGrid(req, res) {
     console.log("getGrid");
     var gridId = req.params.id;
     
-        Grid.findById(gridId).populate({path: 'grid'}).exec((err, grid) => {
-         if(err) {
-             res.status(500).send({message: 'Error en la peticion'});
-         } else {
-             if(!grid) {
-                 res.status(404).send({message: 'El grid no existe'});
-             } else {
-                 res.status(200).send({grid});
-             }
-         }
-       });
+    try {
+        var grid = await Grid.findById(gridId).populate({path: 'grid'});
+        if(!grid) {
+            res.status(404).send({message: 'El grid no existe'});
+        } else {
+            res.status(200).send({grid});
+        }
+    } catch(err) {
+        res.status(500).send({message: 'Error en la peticion'});
+    }
 }
 
-function getGrids(req, res) {
+async function getGrids(req, res) {
     console.log("getGrids");
-    if(req.params.page) {
-        var page = req.params.page;
-    } else {
-        var page = 1;
-    }
+    var page = req.params.page || 1;
 
     var itemsPerPage = 15;
 
-    Grid.find().paginate(page, itemsPerPage, function (err, grids, total){
-        if(err){
-            res.status(500).send({message: 'Error en la peticion'});
+    try {
+        var grids = await Grid.find().skip((page - 1) * itemsPerPage).limit(itemsPerPage);
+        var total = await Grid.countDocuments();
+        if(!grids){
+            res.status(404).send({message: 'No hay grids!!!'});
         }else{
-            if(!grids){
-                res.status(404).send({message: 'No hay grids!!!'});
-            }else{
-                return res.status(200).send({
-                    page: total,
-                    grids: grids
-                });
-            }
+            return res.status(200).send({
+                page: total,
+                grids: grids
+            });
         }
- });
+    } catch(err) {
+        res.status(500).send({message: 'Error en la peticion'});
+    }
 }
 
 function getGridDifficulty(req, res) {
@@ -171,7 +158,7 @@ function getGridDifficulty(req, res) {
        res.status(200).send({grid});
 }
 
-function insertGame(req, res) {
+async function insertGame(req, res) {
     console.log("insertGame");
 
     var user = new User();
@@ -191,87 +178,77 @@ function insertGame(req, res) {
 
     // Primero se elimina el juego antiguo
     var userName = user.name;
-    Game.findOneAndRemove({'user.name' : userName}, (err, game) => {
-        if(!game) {
-            console.log('El juego no existe')
+    try {
+        await Game.findOneAndRemove({'user.name' : userName});
+    } catch(e) {
+        console.log('El juego no existe');
+    }
+
+    try {
+        var gameStored = await game.save();
+        if(!gameStored) {
+            res.status(404).send({message:'No se ha registrado el juego'});
+        } else {
+            res.status(200).send({game: gameStored});
         }
-     });
-
-                    // Guardar game
-                    game.save((err, gameStored) => {
-                        if(err) {
-                            res.status(500).send({message:'Error al guardar el juego'});                        
-                        } else {
-                            if(!gameStored) {
-                                res.status(404).send({message:'No se ha registrado el juego'});
-                            } else {
-                                res.status(200).send({game: gameStored});
-                            }
-                        }
-                    });
-
+    } catch(err) {
+        res.status(500).send({message:'Error al guardar el juego'});
+    }
 }
-function getGame(req, res) {
+async function getGame(req, res) {
     console.log("getGame");
     var userName = req.params.id;
     
-        Game.findOne({'user.name': userName}).populate({path: 'game'}).exec((err, game) => {
-         if(err) {
-             res.status(500).send({message: 'Error en la peticion'});
-         } else {
-             if(!game) {
-                 res.status(404).send({message: 'El game no existe'});
-             } else {
-                 res.status(200).send({game});
-             }
-         }
-       });
-}
-
-function getGames(req, res) {
-        console.log("recuperando games");
-        if(req.params.page) {
-            var page = req.params.page;
+    try {
+        var game = await Game.findOne({'user.name': userName}).populate({path: 'game'});
+        if(!game) {
+            res.status(404).send({message: 'El game no existe'});
         } else {
-            var page = 1;
+            res.status(200).send({game});
         }
-    
-        var itemsPerPage = 15;
-    
-        Game.find().paginate(page, itemsPerPage, function (err, games, total){
-            if(err){
-                res.status(500).send({message: 'Error en la peticion'});
-            }else{
-                if(!games){
-                    res.status(404).send({message: 'No hay games!!!'});
-                }else{
-                    return res.status(200).send({
-                        page: total,
-                        games: games
-                    });
-                }
-            }
-     });
+    } catch(err) {
+        res.status(500).send({message: 'Error en la peticion'});
+    }
 }
 
-function deleteAllGames(req, res) {
-    Game.find().remove( function (err){
-        if(err){
-            res.status(500).send({message: 'Error en la peticion'});
+async function getGames(req, res) {
+    console.log("recuperando games");
+    var page = req.params.page || 1;
+
+    var itemsPerPage = 15;
+
+    try {
+        var games = await Game.find().skip((page - 1) * itemsPerPage).limit(itemsPerPage);
+        var total = await Game.countDocuments();
+        if(!games){
+            res.status(404).send({message: 'No hay games!!!'});
         }else{
-                res.status(404).send({message: 'Juegos eliminados'});
+            return res.status(200).send({
+                page: total,
+                games: games
+            });
         }
-    });
+    } catch(err) {
+        res.status(500).send({message: 'Error en la peticion'});
+    }
 }
 
-function deleteAllGrids(req, res) {
-    Grid.find().remove( function (err){
-        if(err){
-            res.status(500).send({message: 'Error en la peticion'});
-        }else{
-                res.status(404).send({message: 'Tableros eliminados'});
-        }
-    });
+async function deleteAllGames(req, res) {
+    try {
+        await Game.deleteMany({});
+        res.status(200).send({message: 'Juegos eliminados'});
+    } catch(err) {
+        res.status(500).send({message: 'Error en la peticion'});
+    }
+}
+
+async function deleteAllGrids(req, res) {
+    try {
+        await Grid.deleteMany({});
+        res.status(200).send({message: 'Tableros eliminados'});
+    } catch(err) {
+        res.status(500).send({message: 'Error en la peticion'});
+    }
 }
 //a6r1an////////////////////////////////////////////////////////////////////////////
 function gridToMatriz(grid){

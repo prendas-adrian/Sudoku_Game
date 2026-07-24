@@ -18,24 +18,24 @@ function save_user(req, res) {
 
     if(params.password) {
         // Encriptar contraseña y guardar datos 
-        bcrypt.hash(params.password, null, null, function(err, hash) {
+        bcrypt.hash(params.password, null, null, async function(err, hash) {
             if(err) {
                 return res.status(500).send({message:'Error al encriptar la contraseña'});
             }
             user.password = hash;
             if(user.name != null && user.username != null) {
                 // Guardar el usuario
-                user.save((err, userStored) => {
-                    if(err) {
-                        res.status(500).send({message:'Error al guardar el usuario', error: err.message});                        
-                    } else {
-                        if(!userStored) {
+                try{
+                    const result = await user.save()
+                    if(!result) {
                             res.status(404).send({message:'No se ha registrado el usuario'});
                         } else {
-                            res.status(200).send({user: userStored});
+                            res.status(200).send({user: result});
                         }
-                    }
-                });
+                }catch(err){
+                    console.log(err)
+                       res.status(500).send({message:'Error al guardar el usuario', error: err.message});  
+                }
             } else {
                 res.status(200).send({message:'Rellena todos los campos'});                
             }
@@ -45,38 +45,35 @@ function save_user(req, res) {
     }
 }
 
-function login_user(req, res) {
+async function login_user(req, res) {
     var params = req.body;
 
     var username = params.username;
     var password = params.password;
 
-    User.findOne({username: username}, (err, user) => {
-        if(err) res.status(500).send({message: 'Error en la peticion'});
-        else {
-            if(!user) res.status(404).send({message: 'El usuario no existe'});
-            else {
-                // Comprobar la contraseña
-                bcrypt.compare(password, user.password, (err, check) => {
-                    if(check) {
-                        if(params.gethash) {
-                            // Devolver un token de jwt
-                            res.status(200).send({
-                                token: jwt.createToken(user)
-                            });
-                        } else {
-                            res.status(200).send({user});
-                        }
-                    } else {
-                        res.status(404).send({message:'El usuario no ha podido loguearse'});
-                    }
-                });
+    try {
+        var user = await User.findOne({username: username});
+        if(!user) return res.status(404).send({message: 'El usuario no existe'});
+
+        bcrypt.compare(password, user.password, (err, check) => {
+            if(check) {
+                if(params.gethash) {
+                    res.status(200).send({
+                        token: jwt.createToken(user)
+                    });
+                } else {
+                    res.status(200).send({user});
+                }
+            } else {
+                res.status(404).send({message:'El usuario no ha podido loguearse'});
             }
-        }
-    });
+        });
+    } catch(err) {
+        res.status(500).send({message: 'Error en la peticion'});
+    }
 }
 
-function updateUser(req, res){
+async function updateUser(req, res){
     var userId = req.params.id;
     var update = req.body;
 
@@ -84,33 +81,31 @@ function updateUser(req, res){
         return res.status(500).send({message: 'No tienes permiso'});
     }
 
-    User.findByIdAndUpdate(userId, update, (err, userUpdated) => {
-        if(err) {
-            res.status(500).send({message: 'Error al actualizar'});
+    try {
+        var userUpdated = await User.findByIdAndUpdate(userId, update, {new: true});
+        if(!userUpdated) {
+            res.status(404).send({message: 'No se ha podido actualizar'});
         } else {
-            if(!userUpdated) {
-                res.status(404).send({message: 'No se ha podido actualizar'});
-            } else {
-                res.status(200).send({user: userUpdated});
-            }
+            res.status(200).send({user: userUpdated});
         }
-    });
+    } catch(err) {
+        res.status(500).send({message: 'Error al actualizar'});
+    }
 }
 
-function findUser(req, res) {
+async function findUser(req, res) {
     var userId = req.params.id;
 
-    User.findById(userId, (err, user) => {
-        if(err) {
-            res.status(500).send({message: 'Error al econtrar'});
+    try {
+        var user = await User.findById(userId);
+        if(!user) {
+            res.status(404).send({message: 'No se ha podido encontrar'});
         } else {
-            if(!user) {
-                res.status(404).send({message: 'No se ha podido encontrar'});
-            } else {
-                res.status(200).send({user});
-            }
+            res.status(200).send({user});
         }
-    });
+    } catch(err) {
+        res.status(500).send({message: 'Error al econtrar'});
+    }
 }
 
 module.exports = {
