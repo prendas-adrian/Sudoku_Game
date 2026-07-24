@@ -1,0 +1,27 @@
+services:
+  - type: web
+    name: sudoku-backend
+    env: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 8080
+      - key: MONGODB_URI
+        fromDatabase:
+          name: sudoku-db
+          property: connectionString
+    regions:
+      - oregon
+
+  - type: mongodb
+    name: sudoku-db
+    version: 8.2.12
+    plan: free
+    region: oregon
+    ipAllowList:
+      - cidr: 0.0.0.0/0
+        description: Allow all IPs
