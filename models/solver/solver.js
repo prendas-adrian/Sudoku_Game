@@ -3,7 +3,6 @@
 	email: a6r2an@gmail.com
 */
 let {Range} = require('./range');
-let {nextRandom} = require('./test_sudoku');
 
 class SudokuSolver {
 	constructor(sudoku){
