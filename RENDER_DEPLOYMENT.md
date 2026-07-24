@@ -2,14 +2,29 @@
 
 ## Option 1: Automatic Deployment with render.yaml (Recommended)
 
-### Step 1: Push to GitHub
+### Prerequisites
+1. **MongoDB Atlas Account** (Free tier)
+   - Go to https://www.mongodb.com/cloud/atlas
+   - Create free cluster
+   - Create database user
+   - Get connection string (looks like: `mongodb+srv://user:pass@cluster.mongodb.net/sudoku`)
+
+### Step 1: Update render.yaml with MongoDB Atlas Connection
+Edit `render.yaml` and replace the `MONGODB_URI` value:
+```yaml
+envVars:
+  - key: MONGODB_URI
+    value: mongodb+srv://your-username:your-password@cluster0.mongodb.net/sudoku?retryWrites=true&w=majority
+```
+
+### Step 2: Push to GitHub
 ```bash
 git add .
 git commit -m "Add Render deployment config"
 git push origin main
 ```
 
-### Step 2: Connect to Render
+### Step 3: Connect to Render
 1. Go to https://render.com
 2. Sign in with GitHub
 3. Click "New +" → "Blueprint"
@@ -18,7 +33,6 @@ git push origin main
 6. Click "Create New Services"
 
 This will:
-- ✅ Create MongoDB service
 - ✅ Deploy Node.js backend
 - ✅ Set up environment variables
 - ✅ Configure health checks

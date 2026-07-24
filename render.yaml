@@ -11,17 +11,6 @@ services:
       - key: PORT
         value: 8080
       - key: MONGODB_URI
-        fromDatabase:
-          name: sudoku-db
-          property: connectionString
+        value: mongodb+srv://root:example@cluster0.mongodb.net/sudoku?retryWrites=true&w=majority
     regions:
       - oregon
-
-  - type: mongodb
-    name: sudoku-db
-    version: 8.2.12
-    plan: free
-    region: oregon
-    ipAllowList:
-      - cidr: 0.0.0.0/0
-        description: Allow all IPs
