@@ -37,13 +37,25 @@
       </ul>
     </nav>
 
-    <main class="col-sm-9 ml-sm-auto col-md-10 pt-3" role="main" *ngIf="identity">
+    <main class="col-sm-9 ml-sm-auto col-md-10 pt-3 main-content" role="main" *ngIf="identity">
             <div [class.hidden]="!identity">
                 <router-outlet></router-outlet>
             </div>
     </main>
   </div>
 </div>
+
+<nav class="navbar navbar-light bg-light d-sm-none fixed-bottom mobile-nav" *ngIf="identity">
+  <a [routerLink]="['/sudoku']" class="nav-link text-center">
+    <i class="fa fa-gamepad" aria-hidden="true"></i><br>Jugar
+  </a>
+  <a [routerLink]="['/mis-datos']" class="nav-link text-center">
+    <i class="fa fa-user" aria-hidden="true"></i><br>Usuario
+  </a>
+  <a class="nav-link text-center" (click)="logout()" href="#">
+    <i class="fa fa-power-off" aria-hidden="true"></i><br>Salir
+  </a>
+</nav>
 
 <div class="container" *ngIf="!identity">
     <h1 class="title">Sudoku <i class="fa fa-gamepad" aria-hidden="true"></i></h1><hr><br><br>
@@ -58,7 +70,7 @@
         </div>
         <p>
         <label>Usuario: </label>
-        <input type="username" #username="ngModel" name="username" [(ngModel)]="user.username"
+        <input type="text" #username="ngModel" name="username" [(ngModel)]="user.username"
         class="form-control" required />
         <span *ngIf="!username.valid && username.touched">El usuario es obligatorio</span>
       </p>
@@ -81,7 +93,7 @@
         </p>
         <p>
             <label>Usuario: </label>
-            <input type="username" #username="ngModel" name="username" [(ngModel)]="user_register.username"
+            <input type="text" #username="ngModel" name="username" [(ngModel)]="user_register.username"
             class="form-control" required />
             <span *ngIf="!username.valid && username.touched">El usuario es obligatorio</span>
           </p>
