@@ -51,7 +51,7 @@ function login_user(req, res) {
     var username = params.username;
     var password = params.password;
 
-    User.findOne({username: username.toLowerCase()}, (err, user) => {
+    User.findOne({username: username}, (err, user) => {
         if(err) res.status(500).send({message: 'Error en la peticion'});
         else {
             if(!user) res.status(404).send({message: 'El usuario no existe'});
